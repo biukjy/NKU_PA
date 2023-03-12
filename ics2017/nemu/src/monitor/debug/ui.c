@@ -105,6 +105,29 @@ static int cmd_p(char *args)
 
 static int cmd_x(char *args)
 {
+    char *arg=strtok(args,"");
+    char *exprs=strtok(args,"");
+    int n;
+    sscanf(arg,"%d",&n);
+    bool flag1=1;
+    uint32_t addr=expr(exprs,&flag1);
+
+    if(!flag1)
+    {
+	printf("wrong expression in cmd_x()\n");
+    }
+
+    if(n<0)
+    {
+	printf("error args in cmd_x()\n");
+    }
+
+    for(int i=0;i<n;i++)
+    {
+	uint32_t tmp=vaddr_read(addr,4);
+	printf("0x%x: 0x%08x\n",addr,tmp);
+	addr+=4;
+    }
 
     return 0;
 
