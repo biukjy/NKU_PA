@@ -61,7 +61,35 @@ static int cmd_si(char *args){
 
 static int cmd_info(char *args)
 {
-    
+    char *arg=strtok(args,"");
+
+    if(strcmp(arg,"r")==0)
+    {
+	for(int i=0;i<8;i++)
+	{
+	    printf("%s\t0x%x\n",regsl[i],reg_l(i));
+	}
+	printf("eip\t0x%x\n",cpu.eip);
+	
+	for(int i=0;i<8;i++)
+	{
+	    printf("%s\t0x%x\n",regsw[i],reg_w(i));
+	}
+
+	for(int i=0;i<8;i++)
+	{
+	    printf("%s\t0x%x\n",regsb[i],reg_b(i));
+	}
+    }
+    else if(strcmp(arg,"w")==0)
+    {
+	//print_wp();
+    }
+    else
+    {
+	printf("error args in cmd_info()\n");
+
+    }
     return 0;
     
 }
