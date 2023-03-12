@@ -38,6 +38,69 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args){
+  int n; // uint64_t ?????
+  if(args==NULL)
+  {
+      cpu_exec(1);
+      return 0;
+  }
+  else
+  {
+      int flag1=sscanf(args,"%d",&n);
+      if(flag1<=0)
+      {
+	  printf("error args int cmd_si\n");
+	  return 0;
+      }	  
+  }
+  cpu_exec(n);
+  return 0;
+
+}
+
+static int cmd_info(char *args)
+{
+    
+    return 0;
+    
+}
+
+
+static int cmd_p(char *args)
+{
+
+    return 0;
+}
+
+
+
+static int cmd_x(char *args)
+{
+
+    return 0;
+
+}
+
+static int cmd_w(char *args)
+{
+
+    return 0;
+
+}
+
+
+static int cmd_d(char *args)
+{
+
+
+    return 0;
+
+
+}
+
+
+
 static struct {
   char *name;
   char *description;
@@ -48,6 +111,12 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
+  {"si","'si [N=1]',Step through N instructions",cmd_si},
+  {"info","'info <r|w>',Print reg and watchpoints",cmd_info},
+  {"x","'x <N> <EXPR>', Dump N 4-bytes start memory address <EXPR>.",cmd_x},
+  {"p","'p <EXPR>',calculate the expression <EXPR>",cmd_p},
+  {"w","'w <EXPR>',Set new watchpoint <EXPR>",cmd_w},
+  {"d","'d <N>',Delete the watchpoint with sequence number N",cmd_d},
 
 };
 
