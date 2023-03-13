@@ -105,8 +105,8 @@ static int cmd_p(char *args)
 
 static int cmd_x(char *args)
 {
-    char *arg=strtok(args,"");
-    char *exprs=strtok(NULL,"");
+    char *arg=strtok(args," ");
+    char *exprs=strtok(NULL," ");
     int n;
     sscanf(arg,"%d",&n);
     bool flag1=1;
