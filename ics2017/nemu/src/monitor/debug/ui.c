@@ -109,7 +109,8 @@ static int cmd_x(char *args)
     char *exprs=strtok(NULL," ");
     int n;
     sscanf(arg,"%d",&n);
-    bool flag1=1;
+    // bool flag1=1;
+    bool flag1;
     uint32_t addr=expr(exprs,&flag1);
 
     if(!flag1)
