@@ -229,11 +229,11 @@ int eval(int p, int q)
 	    case TK_REG:
 	        for(int i=0;i<8;i++)
 		{
-		    if(strcmp(tokens[p].str,regsl[i])==0)
+		    if(strcmp(tokens[p].str+1,regsl[i])==0)
 			return reg_l(i);
-                    if(strcmp(tokens[p].str,regsw[i])==0)
+                    if(strcmp(tokens[p].str+1,regsw[i])==0)
 			return reg_w(i);
-                    if(strcmp(tokens[p].str,regsb[i])==0)
+                    if(strcmp(tokens[p].str+1,regsb[i])==0)
 			return reg_b(i);
 		}
                 if(strcmp(tokens[p].str,"$eip")==0)
