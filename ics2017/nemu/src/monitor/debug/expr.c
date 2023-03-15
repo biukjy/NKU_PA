@@ -236,7 +236,7 @@ int eval(int p, int q)
                     if(strcmp(tokens[p].str,regsb[i])==0)
 			return reg_b(i);
 		}
-                if(strcmp(tokens[p].str,"eip")==0)
+                if(strcmp(tokens[p].str,"$eip")==0)
                     return cpu.eip;
 		else 
 		{
