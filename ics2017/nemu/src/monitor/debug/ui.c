@@ -97,6 +97,12 @@ static int cmd_info(char *args)
 
 static int cmd_p(char *args)
 {
+    bool success;
+    int res=expr(args,&success);
+    if(success)
+	printf("the value of expr:%d\n",res);
+    else
+	printf("expression error in cmp_p()\n");
 
     return 0;
 }
