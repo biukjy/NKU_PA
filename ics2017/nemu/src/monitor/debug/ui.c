@@ -83,7 +83,7 @@ static int cmd_info(char *args)
     }
     else if(strcmp(arg,"w")==0)
     {
-	//print_wp();
+	print_wp();
     }
     else
     {
@@ -143,20 +143,29 @@ static int cmd_x(char *args)
 
 static int cmd_w(char *args)
 {
-
+    WP *tmp=new_wp(args);
+    printf("success: set watchpoint %d,last_value=%d\n",tmp->NO,tmp->last_value);
     return 0;
-
-
 }
 
 
 static int cmd_d(char *args)
 {
-
-
+    int num=0;
+    sscanf(args,"%d",&num);
+    bool success=true;
+    WP *tmp=delete_wp(num,&success);
+    if(!success)
+    {
+	printf("watchpoint %d error\n",num);
+    }
+    else
+    {
+	printf("delete watchpoint %d : %s\n",tmp->NO,tmp->expr);
+	free_wp(tmp);
+    }
+    
     return 0;
-
-
 }
 
 
