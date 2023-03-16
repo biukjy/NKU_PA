@@ -32,7 +32,7 @@ void cpu_exec(uint64_t n) {
     if(watch_wp())
     {
 	nemu_state=NEMU_STOP;
-        printf("watchpoint ->nemu_state=NEMU_STOP\n");
+        //printf("watchpoint ->nemu_state=NEMU_STOP\n");
     }
 #endif
 
