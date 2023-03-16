@@ -100,7 +100,7 @@ bool watch_wp()
 	{
 	    printf("watchpoint  NO : %d  expr : %s\n",tmp->NO,tmp->expr);
 	    printf("oldvalue: %d\t newvalue: %d\n",tmp->last_value,value);
-            tmp->last_value=value;// ????????
+            tmp->last_value=value;
             //tmp=tmp->next;
 	    return true;
 	}
