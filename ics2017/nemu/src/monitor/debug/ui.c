@@ -144,7 +144,7 @@ static int cmd_x(char *args)
 static int cmd_w(char *args)
 {
     WP *tmp=new_wp(args);
-    printf("success: set watchpoint %d,last_value=%d\n",tmp->NO,tmp->last_value);
+    printf("success: set watchpoint %d,expr:%s\n",tmp->NO,tmp->expr);
     return 0;
 }
 

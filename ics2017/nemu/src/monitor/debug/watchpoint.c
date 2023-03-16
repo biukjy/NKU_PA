@@ -122,6 +122,7 @@ void print_wp()
     while(tmp!=NULL)
     {
 	printf("watchpoint  NO : %d  expr : %s\n",tmp->NO,tmp->expr);
+        tmp=tmp->next;
     }
 
 }
