@@ -12,7 +12,8 @@ make_EHelper(nop);
 
 
 //system.c
-
+make_EHelper(in);
+make_EHelper(out);
 
 
 //control.c
