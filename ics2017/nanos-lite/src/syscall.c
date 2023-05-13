@@ -25,9 +25,14 @@ uintptr_t sys_write(int fd,void *buf,size_t len)
 	}
 	return len;
     }
+    /*
     else // when fd=3?????
     {
 	panic("Unhandled fd=%d in sys_write()",fd);
+    }*/
+    if(fd>=3)
+    {
+        return fs_write(fd,buf,len);
     }
     return -1;
 }
