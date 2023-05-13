@@ -30,6 +30,12 @@ uintptr_t sys_write(int fd,void *buf,size_t len)
     return -1;
 }
 
+int sys_brk(uintptr_t addr)
+{
+    return 0;
+}
+
+
 
 _RegSet* do_syscall(_RegSet *r) {
   uintptr_t a[4];
@@ -47,6 +53,9 @@ _RegSet* do_syscall(_RegSet *r) {
 	break;
     case SYS_write:
         SYSCALL_ARG1(r)=sys_write(a[1],(void*)a[2],a[3]);
+        break;
+    case SYS_brk:
+        SYSCALL_ARG1(r)=sys_brk(a[1]);
         break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
