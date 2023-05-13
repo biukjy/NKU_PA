@@ -31,6 +31,7 @@ static Finfo file_table[] __attribute__((used)) = {
 
 void init_fs() {
   // TODO: initialize the size of /dev/fb
+
 }
 
 size_t fs_filesz(int fd)
@@ -105,3 +106,50 @@ int fs_close(int fd)
 {
     return 0;
 }
+
+ssize_t fs_write(int fd,const void *buf,size_t len)
+{
+    assert(fd>=0&&fd<NR_FILES);
+    if(fd<3||fd==FD_DISPINFO)
+    {
+	return 0;
+    }
+
+    ssize_t n=fs_filesz(fd)-get_open_offset(fd);
+    if(n>len){ n=len; }
+
+    if(fd==FD_FB)
+    {
+	fb_write(buf,get_open_offset(fd),n);
+    }
+    else
+    {
+	ramdisk_write(buf,disk_offset(fd)+get_open_offset(fd),n);
+    }
+
+    set_open_offset(fd,get_open_offset(fd)+n);
+    return n;
+}
+
+off_t fs_lseek(int fd,off_t offset,int whence)
+{
+    switch (whence)
+    {
+	case SEEK_SET:
+	    set_open_offset(fd,offset);
+	    return get_open_offset(fd);
+	case SEEK_CUR:
+	    set_open_offset(fd,get_open_offset(fd)+offset);
+	    return get_open_offset(fd);
+	case SEEK_END:
+	    set_open_offset(fd,fs_filesz(fd)+offset);
+	    return get_open_offset(fd);
+	default:
+	    panic("whence error.\n");
+	    return -1;
+    }
+}
+
+
+
+

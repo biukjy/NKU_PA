@@ -1,5 +1,6 @@
 #include "common.h"
 #include "syscall.h"
+#include "fs.h"
 
 int sys_none()
 {
@@ -36,6 +37,26 @@ int sys_brk(uintptr_t addr)
     return 0;
 }
 
+int sys_open(const char* filename)
+{
+    return fs_open(filename,0,0);
+}
+
+ssize_t sys_read(int fd,void* buf,size_t len)
+{
+    return fs_read(fd,buf,len);
+}
+
+int sys_lseek(int fd,off_t offset,int whence)
+{
+    return fs_lseek(fd,offset,whence);
+}
+
+int sys_close(int fd)
+{
+    return fs_close(fd);
+}
+
 
 
 _RegSet* do_syscall(_RegSet *r) {
@@ -58,6 +79,18 @@ _RegSet* do_syscall(_RegSet *r) {
     case SYS_brk:
         SYSCALL_ARG1(r)=sys_brk(a[1]);
         break;
+    case SYS_open:
+        SYSCALL_ARG1(r)=sys_open((char*)a[1]);
+        break;
+    case SYS_read:
+        SYSCALL_ARG1(r)=sys_read(a[1],(void*)a[2],a[3]);
+	break;
+    case SYS_lseek:
+        SYSCALL_ARG1(r)=sys_lseek(a[1],a[2],a[3]);
+	break;
+    case SYS_close:
+        SYSCALL_ARG1(r)=sys_close(a[1]);
+	break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
 
