@@ -82,7 +82,8 @@ ssize_t fs_read(int fd,void *buf,size_t len)
 	return 0;
     }
     Log("33333\n");
-    if(fd==FD_EVENTS)
+    //if(fd==FD_EVENTS)
+    if(fd==16)
     {
         Log("1111\n");
 	return events_read(buf,len);
