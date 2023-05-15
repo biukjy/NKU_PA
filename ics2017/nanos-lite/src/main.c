@@ -30,8 +30,8 @@ int main() {
 
   init_fs();
 
-  uint32_t entry = loader(NULL, "/bin/pal");
+  uint32_t entry = loader(NULL, "/bin/text");
   ((void (*)(void))entry)();
-  //Log("sjdicsa");
+
   panic("Should not reach here");
 }
