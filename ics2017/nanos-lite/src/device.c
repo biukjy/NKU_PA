@@ -9,6 +9,7 @@ static const char *keyname[256] __attribute__((used)) = {
 };
 
 size_t events_read(void *buf, size_t len) {
+    Log("2222\n");
     int key=_read_key();
     char buffer[40];
     int down=0;
