@@ -9,9 +9,9 @@ static const char *keyname[256] __attribute__((used)) = {
 };
 
 size_t events_read(void *buf, size_t len) {
-    Log("2222\n");
+    //Log("2222\n");
     int key=_read_key();
-    Log("8888\n");
+    //Log("8888\n");
     char buffer[40];
     int down=0;
     if(key&0x8000)
@@ -19,7 +19,7 @@ size_t events_read(void *buf, size_t len) {
 	key^=0x8000;
 	down=1;
     }
-    Log("9888\n");
+    //Log("9888\n");
     if(key!=_KEY_NONE)
     {
 	sprintf(buffer,"%s %s\n",down?"kd":"ku",keyname[key]);
@@ -28,7 +28,7 @@ size_t events_read(void *buf, size_t len) {
     {
 	sprintf(buffer,"t %d\n",_uptime());
     }
-    Log("1888\n");
+    //Log("1888\n");
     if(strlen(buffer)<=len)
     {
 	strncpy((char*)buf,buffer,strlen(buffer));

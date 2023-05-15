@@ -32,6 +32,6 @@ int main() {
 
   uint32_t entry = loader(NULL, "/bin/pal");
   ((void (*)(void))entry)();
-  Log("sjdicsa");
+  //Log("sjdicsa");
   panic("Should not reach here");
 }
