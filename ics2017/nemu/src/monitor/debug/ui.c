@@ -65,6 +65,7 @@ static int cmd_info(char *args)
 
     if(strcmp(arg,"r")==0)
     {
+        printf("CR0=0x%x,CR3=0x%x\n",cpu.CR0,cpu.CR3);
 	for(int i=0;i<8;i++)
 	{
 	    printf("%s\t0x%x\n",regsl[i],reg_l(i));
