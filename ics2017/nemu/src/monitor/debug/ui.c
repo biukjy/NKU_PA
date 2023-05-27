@@ -36,161 +36,149 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+static int cmd_si(char *args);
+
+static int cmd_info(char *args);
+
+static int cmd_x(char *args); 
+
+static int cmd_p(char *args); 
+
 static int cmd_help(char *args);
 
-static int cmd_si(char *args){
-  int n; // uint64_t ?????
-  if(args==NULL)
-  {
-      cpu_exec(1);
-      return 0;
-  }
-  else
-  {
-      int flag1=sscanf(args,"%d",&n);
-      if(flag1<=0)
-      {
-	  printf("error args int cmd_si\n");
-	  return 0;
-      }	  
-  }
-  cpu_exec(n);
-  return 0;
+static int cmd_w(char* args);
 
-}
-
-static int cmd_info(char *args)
-{
-    char *arg=strtok(args,"");
-
-    if(strcmp(arg,"r")==0)
-    {
-        printf("CR0=0x%x,CR3=0x%x\n",cpu.CR0,cpu.CR3);
-	for(int i=0;i<8;i++)
-	{
-	    printf("%s\t0x%x\n",regsl[i],reg_l(i));
-	}
-	printf("eip\t0x%x\n",cpu.eip);
-	
-	for(int i=0;i<8;i++)
-	{
-	    printf("%s\t0x%x\n",regsw[i],reg_w(i));
-	}
-
-	for(int i=0;i<8;i++)
-	{
-	    printf("%s\t0x%x\n",regsb[i],reg_b(i));
-	}
-    }
-    else if(strcmp(arg,"w")==0)
-    {
-	print_wp();
-    }
-    else
-    {
-	printf("error args in cmd_info()\n");
-
-    }
-    return 0;
-    
-}
-
-
-static int cmd_p(char *args)
-{
-    bool success;
-    int res=expr(args,&success);
-    if(success)
-	printf("the value of expr:%d\n",res);
-    else
-	printf("expression error in cmp_p()\n");
-
-    return 0;
-}
-
-
-
-static int cmd_x(char *args)
-{
-    char *arg=strtok(args," ");
-    char *exprs=strtok(NULL," ");
-    int n;
-    sscanf(arg,"%d",&n);
-    bool flag1=1;
-    //bool flag1;
-    uint32_t addr=expr(exprs,&flag1);
-
-    if(!flag1)
-    {
-	printf("wrong expression in cmd_x()\n");
-    }
-
-    if(n<0)
-    {
-	printf("error args in cmd_x()\n");
-    }
-
-    for(int i=0;i<n;i++)
-    {
-	uint32_t tmp=vaddr_read(addr,4);
-	printf("0x%x: 0x%08x\n",addr,tmp);
-	addr+=4;
-    }
-
-    return 0;
-
-}
-
-
-static int cmd_w(char *args)
-{
-    WP *tmp=new_wp(args);
-    printf("success: set watchpoint %d,expr:%s\n",tmp->NO,tmp->expr);
-    return 0;
-}
-
-
-static int cmd_d(char *args)
-{
-    int num=0;
-    sscanf(args,"%d",&num);
-    bool success=true;
-    WP *tmp=delete_wp(num,&success);
-    if(!success)
-    {
-	printf("watchpoint %d error\n",num);
-    }
-    else
-    {
-	printf("delete watchpoint %d : %s\n",tmp->NO,tmp->expr);
-	free_wp(tmp);
-    }
-    
-    return 0;
-}
-
+static int cmd_d(char* args);
 
 
 static struct {
-  char *name;
+  char *name; 
   char *description;
   int (*handler) (char *);
 } cmd_table [] = {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+  { "si","args:[N];execute [N] instructions step by step",cmd_si},
+  { "info","args:r/w;print information about registers or watchpoint",cmd_info},
+  { "x","x [N] [EXPR];scan the memory",cmd_x},
+  { "p","expr",cmd_p},
+  { "w","set the watchpoint",cmd_w},
+  { "d","delete the watchpoint",cmd_d},
   /* TODO: Add more commands */
-  {"si","'si [N=1]',Step through N instructions",cmd_si},
-  {"info","'info <r|w>',Print reg and watchpoints",cmd_info},
-  {"x","'x <N> <EXPR>', Dump N 4-bytes start memory address <EXPR>.",cmd_x},
-  {"p","'p <EXPR>',calculate the expression <EXPR>",cmd_p},
-  {"w","'w <EXPR>',Set new watchpoint <EXPR>",cmd_w},
-  {"d","'d <N>',Delete the watchpoint with sequence number N",cmd_d},
 
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))
+
+static int cmd_d(char* args)
+{
+    	int num=0;
+	int nRet=sscanf(args,"%d",&num);
+	if(nRet<=0)
+	{
+		printf("args error in cmd_d\n");
+		return 0;
+	}
+	int r=free_wp(num);
+	if(r==false)
+	{
+		printf("error: no watchpoint %d\n",num);
+	}
+	else
+	{
+		printf("Success delete watchpoint %d\n", num);
+	}
+	return 0;
+}
+
+static int cmd_w(char* args)
+{
+    new_wp(args);
+    return 0;
+}
+
+static int cmd_p(char *args) {
+    bool success=false;
+    // char *arg = strtok(NULL, " "); //参数只有一个，这个参数里可能有空格
+    int res =  expr(args,&success);
+    if(success==false)
+    {
+	printf("error in expr()\n");
+    }
+    else
+    {
+    	printf("the value of expr is:%d\n",res);
+    }
+    return 0;
+}
+
+static int cmd_si(char *args) {
+    uint64_t N=0;
+    if(args==NULL)
+        N=1;
+    else{
+        int nRet = sscanf(args,"%llu",&N);
+        if(nRet<=0){
+            printf("args error in cmd_si\n");
+            return 0;
+        }
+    }
+    cpu_exec(N);
+    return 0;
+}
+
+static int cmd_info(char *args){
+    char s;
+    if(args==NULL){
+        printf("args error in cmd_info\n");
+        return 0;
+    }
+    int nRet=sscanf(args,"%c",&s);
+    if(nRet<=0){
+        printf("args error in cmd_info\n");
+        return 0;
+    }
+    if(s=='r'){
+        printf("CR0=0x%x,CR3=0x%x\n",cpu.CR0,cpu.CR3);
+        int i;
+        for(i=0;i<8;i++)
+            printf("%s   0x%x\n",regsl[i],reg_l(i));
+        printf("eip   0x%x\n",cpu.eip);
+        for(i=0;i<8;i++)
+            printf("%s   0x%x\n",regsw[i],reg_w(i));
+        for(i=0;i<8;i++)
+            printf("%s   0x%x\n",regsb[i],reg_b(i));
+        return 0;
+    }
+    if(s=='w')
+    {
+	print_wp();
+	return 0;
+    }
+    printf("args error in cmd_info\n");
+    return 0;
+}
+
+static int cmd_x(char *args){
+	int nLen=0;
+	vaddr_t addr;
+	char temp[32]={};
+	int nRet=sscanf(args,"%d %s",&nLen,&temp[0]);
+	bool success=false;
+ 	addr =expr(temp,&success);
+	if(nRet<=0)
+	{
+		printf("args error in cmd_x\n");
+		return 0;
+	}
+	for(int i=0;i<nLen;i++)
+	{
+		printf("\n0x%x: 0x%08x",addr,vaddr_read(addr,4));
+	}
+	printf("\n");
+	return 0;
+}
 
 static int cmd_help(char *args) {
   /* extract the first argument */

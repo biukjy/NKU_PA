@@ -7,7 +7,6 @@ extern rtlreg_t t0, t1, t2, t3;
 extern const rtlreg_t tzero;
 
 /* RTL basic instructions */
-
 static inline void rtl_li(rtlreg_t* dest, uint32_t imm) {
   *dest = imm;
 }
@@ -113,10 +112,12 @@ static inline void rtl_sr(int r, int width, const rtlreg_t* src1) {
 
 #define make_rtl_setget_eflags(f) \
   static inline void concat(rtl_set_, f) (const rtlreg_t* src) { \
-    cpu.eflags.f=*src; \
+    /*TODO();*/ \
+    cpu.eflags.f=*src;\
   } \
   static inline void concat(rtl_get_, f) (rtlreg_t* dest) { \
-    *dest=cpu.eflags.f; \
+    /*TODO();*/ \
+    *dest=cpu.eflags.f;\
   }
 
 make_rtl_setget_eflags(CF)
@@ -136,29 +137,27 @@ static inline void rtl_not(rtlreg_t* dest) {
 
 static inline void rtl_sext(rtlreg_t* dest, const rtlreg_t* src1, int width) {
   // dest <- signext(src1[(width * 8 - 1) .. 0])
-  if(width==4)
-  {
+  if(width==4){
       rtl_mv(dest,src1);
   }
-  else
-  {
+  else{
       assert(width==1||width==2);
       rtl_shli(dest,src1,(4-width)*8);
-      rtl_sari(dest,dest,(4-width)*8);//????
+      rtl_sari(dest,dest,(4-width)*8);
   }
 }
 
 static inline void rtl_push(const rtlreg_t* src1) {
   // esp <- esp - 4
-  rtl_subi(&cpu.esp,&cpu.esp,4);
   // M[esp] <- src1
+  rtl_subi(&cpu.esp,&cpu.esp,4);
   rtl_sm(&cpu.esp,4,src1);
 }
 
 static inline void rtl_pop(rtlreg_t* dest) {
   // dest <- M[esp]
-  rtl_lm(dest,&cpu.esp,4);
   // esp <- esp + 4
+  rtl_lm(dest,&cpu.esp,4);
   rtl_addi(&cpu.esp,&cpu.esp,4);
 }
 
@@ -205,26 +204,21 @@ static inline void rtl_update_ZFSF(const rtlreg_t* result, int width) {
   rtl_update_SF(result, width);
 }
 
-static inline void rtl_load_cr(rtlreg_t* dest,int r)
-{
-    switch(r)
-    {
-	case 0:*dest=cpu.CR0;return;
-	case 3:*dest=cpu.CR3;return;
-	default:assert(0);
-    }
-    return;
+static inline void rtl_load_cr(rtlreg_t* dest,int r){
+  switch(r){
+    case 0:*dest=cpu.CR0;return;
+    case 3:*dest=cpu.CR3;return;
+    default:assert(0);
+  }
+  return;
 }
 
-static inline void rtl_store_cr(int r,const rtlreg_t* src)
-{
-    switch(r)
-    {
-	case 0:cpu.CR0=*src;return;
-	case 3:cpu.CR3=*src;return;
-	default:assert(0);
-    }
-    return;
+static inline void rtl_store_cr(int r,const rtlreg_t* src){
+  switch(r){
+    case 0:cpu.CR0=*src;return;
+    case 3:cpu.CR3=*src;return;
+    default:assert(0);
+  }
+  return;
 }
-
 #endif

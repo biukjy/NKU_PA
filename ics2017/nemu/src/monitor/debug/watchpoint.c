@@ -5,125 +5,127 @@
 
 static WP wp_pool[NR_WP];
 static WP *head, *free_;
+static int used_next;
+static WP *wptemp;
 
 void init_wp_pool() {
-  int i;
-  for (i = 0; i < NR_WP; i ++) {
-    wp_pool[i].NO = i;
-    wp_pool[i].next = &wp_pool[i + 1];
-  }
-  wp_pool[NR_WP - 1].next = NULL;
-
-  head = NULL;
-  free_ = wp_pool;
+	int i;
+	for (i = 0; i < NR_WP; i ++) 
+	{
+		wp_pool[i].NO = i;
+		wp_pool[i].next = &wp_pool[i + 1];
+		wp_pool[i].oldValue=0;
+		wp_pool[i].hitNum=0;
+  	}
+  	wp_pool[NR_WP - 1].next = NULL;
+ 	head = NULL;
+  	free_ = wp_pool;
+	used_next=0;
 }
 
 /* TODO: Implement the functionality of watchpoint */
-
-WP* new_wp(char* args)
-{
-    if(free_==NULL)
-	assert(0);
-    WP *tmp=free_;
-    free_=free_->next;
-    tmp->next=NULL;
-
-    bool success;
-    strcpy(tmp->expr,args);
-    tmp->last_value=expr(tmp->expr,&success);
-    assert(success);
-
-    if(head==NULL)
-	head=tmp;
-    else
-    {
-	WP *tmp1=head;
-	while(tmp1->next!=NULL)
-	    tmp1=tmp1->next;
-	tmp1->next=tmp;
-    }
-
-    return tmp;
-}
-
-
-WP *delete_wp(int num,bool *success)
-{
-    WP *tmp=head;
-    while(tmp!=NULL&&tmp->NO!=num)
-        tmp=tmp->next;
-    if(tmp==NULL)
-        *success=false;
-    return tmp;
-
-}
-
-
-
-void free_wp(WP* wp)
-{
-    if(wp==NULL)
-    {
-	printf("watchpoint is nullptr\n");
-	assert(0);
-    }
-    if(wp==head)
-	head=head->next;
-    else
-    {
-	WP *tmp=head;
-	while(tmp->next!=wp && tmp!=NULL)
-	    tmp=tmp->next;
-	tmp->next=tmp->next->next;
-    }
-
-
-    wp->next=free_;
-    free_=wp;
-    wp->expr[0]='\0';
-    wp->last_value=0;
-
-}
-
-
-bool watch_wp()
-{
-    bool success;
-    int value;
-    WP *tmp=head;
-    if(head==NULL)
-	return false;
-    while(tmp!=NULL)
-    {
-	value=expr(tmp->expr,&success);
-	if(value!=tmp->last_value)
+bool new_wp(char *args){
+    	if(free_==NULL)
 	{
-	    printf("watchpoint  NO : %d  expr : %s\n",tmp->NO,tmp->expr);
-	    printf("oldvalue: %d\t newvalue: %d\n",tmp->last_value,value);
-            tmp->last_value=value;
-            //tmp=tmp->next;
-	    return true;
+		assert(0);
 	}
-	tmp=tmp->next;
-    }
-    return false;
+	WP* result=free_;
+	free_=free_->next;
+	used_next++;
+	result->next=NULL;
+	strcpy(result->e,args);
+	result->hitNum=0;
+	bool success;
+	result->oldValue=expr(result->e,&success);
+	if(success==false)
+	{
+		printf("error in new_wp:expression fault!\n");
+		return false;
+	}
+	wptemp=head;
+	if(wptemp==NULL)
+	{
+		head=result;
+	}
+	else
+	{
+		while(wptemp->next!=NULL)
+		{
+			wptemp=wptemp->next;
+		}
+		wptemp->next=result;
+	}
+	printf("Success: set watchpoint %d,oldValue=%d\n",result->NO,result->oldValue);
+	return true;
 }
-
-
-void print_wp()
-{
-    if(head==NULL)
-    {
-	printf("No watchpoint now\n");
-	return ;
-    }
-
-    WP *tmp=head;
-    while(tmp!=NULL)
-    {
-	printf("watchpoint  NO : %d  expr : %s\n",tmp->NO,tmp->expr);
-        tmp=tmp->next;
-    }
-
+bool free_wp(int num){
+	WP* thewp=NULL;
+	if(head==NULL)
+	{
+		printf("no watchpoint now\n");
+		return false;
+	}
+	if(head->NO==num)
+	{
+		thewp=head;
+		head=head->next;
+	}
+	else
+	{
+		wptemp=head;
+		while(wptemp!=NULL && wptemp->next!=NULL)
+		{
+			if(wptemp->next->NO==num)
+			{
+				thewp=wptemp->next;
+				wptemp->next=wptemp->next->next;
+				break;
+			}
+			wptemp=wptemp->next;
+		}
+	}
+	if(thewp!=NULL)
+	{
+		thewp->next=free_;
+		free_=thewp;
+		return true;
+	}
+	return false;
 }
-
+void print_wp(){
+   	if(head==NULL)
+	{
+		printf("no watchpoint now\n");
+		return;
+	}
+	printf("watchpoint:\n");
+	printf("NO.      expr         hitTimes\n");
+	wptemp=head;
+	while(wptemp!=NULL)
+	{
+		printf("%d     %s          %d\n",wptemp->NO,wptemp->e,wptemp->hitNum);
+		wptemp=wptemp->next;
+	}
+}
+bool watch_wp(){  //监视点里某个变动了，返回true
+    	bool success;
+	int result;
+	if(head==NULL)
+	{
+		return true;
+	}
+	wptemp=head;
+	while(wptemp!=NULL)
+	{
+		result=expr(wptemp->e,&success);
+		if(result!=wptemp->oldValue)
+		{
+			wptemp->hitNum++;
+			printf("Hardware watchpoint %d:%s\n",wptemp->NO,wptemp->e);
+			printf("Old value:%d\nNew value:%d\n",wptemp->oldValue,result);
+			return false;
+		}
+		wptemp=wptemp->next;
+	}
+	return true;
+}

@@ -13,6 +13,7 @@ typedef struct {
 #define EX(ex)             EXW(ex, 0)
 #define EMPTY              EX(inv)
 
+#define TIME_IRQ 32
 static inline void set_width(int width) {
   if (width == 0) {
     width = decoding.is_operand_size_16 ? 2 : 4;
@@ -40,9 +41,6 @@ static make_EHelper(name) { \
 }
 
 /* 0x80, 0x81, 0x83 */
-/*make_group(gp1,
-    EX(add), EX(or), EX(adc), EX(sbb),
-    EX(and), EX(sub), EX(xor), EX(cmp))*/
 make_group(gp1,
     EX(add), EX(or), EX(adc), EX(sbb),
     EX(and), EX(sub), EX(xor), EX(cmp))
@@ -69,7 +67,7 @@ make_group(gp5,
 
   /* 0x0f 0x01*/
 make_group(gp7,
-    EMPTY, EMPTY, EMPTY, EX(lidt),
+    EMPTY, EMPTY, EMPTY, IDEX(lidt_a,lidt),
     EMPTY, EMPTY, EMPTY, EMPTY)
 
 /* TODO: Add more instructions!!! */
@@ -77,8 +75,8 @@ make_group(gp7,
 opcode_entry opcode_table [512] = {
   /* 0x00 */	IDEXW(G2E,add,1), IDEX(G2E,add), IDEXW(E2G,add,1), IDEX(E2G,add),
   /* 0x04 */	IDEXW(I2a,add,1), IDEX(I2a,add), EMPTY, EMPTY,
-  /* 0x08 */	IDEXW(G2E,or,1), IDEX(G2E,or), IDEXW(E2G,or,1), IDEX(E2G,or),
-  /* 0x0c */	IDEXW(I2a,or,1), IDEX(I2a,or), EMPTY, EX(2byte_esc),
+  /* 0x08 */	IDEXW(G2E,or ,1), IDEX(G2E,or ), IDEXW(E2G,or ,1), IDEX(E2G,or ),
+  /* 0x0c */	IDEXW(I2a,or ,1), IDEX(I2a,or ), EMPTY, EX(2byte_esc),
   /* 0x10 */	IDEXW(G2E,adc,1), IDEX(G2E,adc), IDEXW(E2G,adc,1), IDEX(E2G,adc),
   /* 0x14 */	IDEXW(I2a,adc,1), IDEX(I2a,adc), EMPTY, EMPTY,
   /* 0x18 */	IDEXW(G2E,sbb,1), IDEX(G2E,sbb), IDEXW(E2G,sbb,1), IDEX(E2G,sbb),
@@ -95,10 +93,10 @@ opcode_entry opcode_table [512] = {
   /* 0x44 */	IDEX(r,inc), IDEX(r,inc), IDEX(r,inc), IDEX(r,inc),
   /* 0x48 */	IDEX(r,dec), IDEX(r,dec), IDEX(r,dec), IDEX(r,dec),
   /* 0x4c */	IDEX(r,dec), IDEX(r,dec), IDEX(r,dec), IDEX(r,dec),
-  /* 0x50 */	IDEX(r,push),IDEX(r,push),IDEX(r,push),IDEX(r,push),
-  /* 0x54 */	IDEX(r,push),IDEX(r,push),IDEX(r,push),IDEX(r,push),
-  /* 0x58 */	IDEX(r,pop),IDEX(r,pop),IDEX(r,pop),IDEX(r,pop),
-  /* 0x5c */	EMPTY, IDEX(r,pop),IDEX(r,pop),IDEX(r,pop),
+  /* 0x50 */	IDEX(r,push), IDEX(r,push), IDEX(r,push), IDEX(r,push),
+  /* 0x54 */	IDEX(r,push), IDEX(r,push), IDEX(r,push), IDEX(r,push),
+  /* 0x58 */	IDEX(r,pop), IDEX(r,pop), IDEX(r,pop), IDEX(r,pop),
+  /* 0x5c */	EMPTY, IDEX(r,pop), IDEX(r,pop), IDEX(r,pop),
   /* 0x60 */	EX(pusha), EX(popa), EMPTY, EMPTY,
   /* 0x64 */	EMPTY, EMPTY, EX(operand_size), EMPTY,
   /* 0x68 */	IDEX(push_SI,push), EMPTY, IDEXW(push_SI,push,1), IDEX(I_E2G,imul3),
@@ -131,7 +129,7 @@ opcode_entry opcode_table [512] = {
   /* 0xd4 */	EMPTY, EMPTY, EX(nemu_trap), EMPTY,
   /* 0xd8 */	EMPTY, EMPTY, EMPTY, EMPTY,
   /* 0xdc */	EMPTY, EMPTY, EMPTY, EMPTY,
-  /* 0xe0 */	EMPTY, EMPTY, EMPTY, EMPTY,
+  /* 0xe0 */	EMPTY, EMPTY, EMPTY, IDEXW(J,jcc,1),
   /* 0xe4 */	IDEXW(in_I2a,in,1), IDEXW(in_I2a,in,1), IDEXW(out_a2I,out,1), IDEXW(out_a2I,out,1),
   /* 0xe8 */	IDEX(J,call), IDEX(J,jmp), EMPTY, IDEXW(J,jmp,1),
   /* 0xec */	IDEXW(in_dx2a,in,1), IDEX(in_dx2a,in), IDEXW(out_a2dx,out,1), IDEX(out_a2dx,out),
@@ -255,4 +253,10 @@ void exec_wrapper(bool print_flag) {
   void difftest_step(uint32_t);
   difftest_step(eip);
 #endif
+  if(cpu.INTR & cpu.eflags.IF){
+    cpu.INTR=false;
+    extern void raise_intr(uint8_t NO,vaddr_t ret_addr);
+    raise_intr(TIME_IRQ,cpu.eip);
+    update_eip();
+  }
 }
