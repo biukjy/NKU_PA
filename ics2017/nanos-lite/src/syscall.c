@@ -39,7 +39,8 @@ uintptr_t sys_write(int fd,void *buf,size_t len)
 
 int sys_brk(uintptr_t addr)
 {
-    return 0;
+    extern int mm_brk(uint32_t new_brk);
+    return mm_brk(addr);
 }
 
 int sys_open(const char* filename)
